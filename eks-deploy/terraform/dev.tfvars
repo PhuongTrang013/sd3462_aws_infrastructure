@@ -1,5 +1,5 @@
 # aws region
-region = "us-east-2"
+region = "us-east-1"
 
 # eks cluster name
 cluster_name = "devops-eks"
