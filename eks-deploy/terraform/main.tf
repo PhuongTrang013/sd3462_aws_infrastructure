@@ -1,20 +1,6 @@
-# to use s3 backend 
-# s3 bucket is configured at command line
-#terraform {
-#  backend "s3" {}
-#}
-
 # setup terraform aws provider to create resources in your desired aws region
 provider "aws" {
   region = var.region
-
-  # uncomment and substitute the arn if you are using assume role to talk to your aws account
-  # read the official terraform aws provider and aws documentation on how to achieve this
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration
-  # assume_role {
-  #   role_arn = "<aws iam role arn>"
-  # }
-
 }
 
 # invoke cluster module which creates vpc, subnets and eks cluter
@@ -28,4 +14,35 @@ module "cluster" {
   # eks details
   eks_cluster_name = var.cluster_name
   k8s_version      = var.k8s_version
+}
+
+#invoke ecr module
+module "ecr" {
+  source = "terraform-aws-modules/ecr/aws"
+
+  repository_name = "practical-devops"
+
+  repository_read_write_access_arns = var.access_arns
+  repository_lifecycle_policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1,
+        description  = "Keep last 30 images",
+        selection = {
+          tagStatus     = "tagged",
+          tagPrefixList = ["v"],
+          countType     = "imageCountMoreThan",
+          countNumber   = 30
+        },
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
 }
