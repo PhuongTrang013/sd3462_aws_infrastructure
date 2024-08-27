@@ -1,8 +1,12 @@
 pipeline {
     agent any
+
+    environment {
+        KUBECONFIG = "/var/lib/jenkins/.kube/config" //locate in jenkins EC2 serevr
+    }
    
     stages {
-        stage('Push to ECR') {
+        stage('Deploy to EKS') {
             steps {
                 script {
                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
