@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+   
+    stages {
+        stage('Push to ECR') {
+            steps {
+                script {
+                   catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    withCredentials([usernamePassword(credentialsId: 'a61005e5-e4c9-42a7-939c-cef3e77e87ad', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                      
+                        sh "git commit -m 'By Jenkins Job changemanifest: ${env.BUILD_NUMBER}'"
+                        sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${GIT_USERNAME}/K8s-Manifests.git HEAD:main" 
+                }
+            }
+        }
+    }
+}
