@@ -28,8 +28,7 @@ spec:
     spec:
       containers:
         - name: react-app
-          image: hnguyencanh/frontend:latest
+          image: 905418472653.dkr.ecr.us-east-1.amazonaws.com/practical-devops:latest-25
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
-
