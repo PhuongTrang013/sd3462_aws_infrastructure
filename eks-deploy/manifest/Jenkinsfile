@@ -5,7 +5,7 @@ pipeline {
         AWS_REGION = 'us-east-1'
         AWS_CREDENTIALS_ID = '905418472653'
         KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-credentials-id'
-        KUBE_NAMESPACE = 'ingress-nginx'
+        KUBE_NAMESPACE = 'eks-ns'
         ECR_REPO = '905418472653.dkr.ecr.us-east-1.amazonaws.com/practical-devops'
         EKS_NAME = 'devops-eks'
     }
@@ -30,7 +30,7 @@ pipeline {
                 script {
                     sh """
                     # Update image tag in the manifest files
-                    find ${env.WORKSPACE}/eks-deploy/manifest/ -type f -name '*.yaml' -exec sed -i 's|image: ${ECR_REPO}:.*|image: ${ECR_REPO}:${IMAGE_TAG}|g' {} +
+                    find ${env.WORKSPACE}/eks-deploy/manifest/deploy -type f -name '*.yaml' -exec sed -i 's|image: ${ECR_REPO}:.*|image: ${ECR_REPO}:${IMAGE_TAG}|g' {} +
                     """
                 }
             }
@@ -43,7 +43,7 @@ pipeline {
                         sh "aws eks update-kubeconfig --region $AWS_REGION --name $EKS_NAME"
 
                         withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
-                            sh "kubectl apply -f ${env.WORKSPACE}/eks-deploy/manifest/ --namespace=${KUBE_NAMESPACE}"
+                            sh "kubectl apply -f ${env.WORKSPACE}/eks-deploy/manifest/deploy --namespace=${KUBE_NAMESPACE}"
                         }
                     }
                 }
