@@ -7,6 +7,7 @@ pipeline {
         KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-credentials-id'
         KUBE_NAMESPACE = 'ingress-nginx'
         ECR_REPO = '905418472653.dkr.ecr.us-east-1.amazonaws.com/practical-devops'
+        EKS_NAME = 'devops-eks'
     }
    
     stages {
@@ -14,16 +15,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}", region: AWS_REGION)]) {
-                        sh "aws eks update-kubeconfig --region $AWS_REGION --name devops-eks"
+                        sh "aws eks update-kubeconfig --region $AWS_REGION --name $EKS_NAME"
 
                         withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
-                        sh "kubectl create namespace ${KUBE_NAMESPACE} || echo 'Namespace already exists'"
+                            sh "kubectl create namespace ${KUBE_NAMESPACE} || echo 'Namespace already exists'"
                         }
                     }
-                    
-                    // withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
-                    //     sh "kubectl create namespace ${KUBE_NAMESPACE} || echo 'Namespace already exists'"
-                    // }
                 }
             }
         }
@@ -42,8 +39,12 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
-                        sh "kubectl apply -f ${env.WORKSPACE}/eks-deploy/manifest/ --namespace=${KUBE_NAMESPACE}"
+                    withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}", region: AWS_REGION)]) {
+                        sh "aws eks update-kubeconfig --region $AWS_REGION --name $EKS_NAME"
+
+                        withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
+                            sh "kubectl apply -f ${env.WORKSPACE}/eks-deploy/manifest/ --namespace=${KUBE_NAMESPACE}"
+                        }
                     }
                 }
             }
