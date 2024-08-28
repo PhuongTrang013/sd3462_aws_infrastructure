@@ -5,13 +5,16 @@ pipeline {
         KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-credentials-id'
         KUBE_NAMESPACE = 'ingress-nginx'
         ECR_REPO = '905418472653.dkr.ecr.us-east-1.amazonaws.com/practical-devops'
+        KUBECONFIG = "/var/lib/jenkins/.kube/config" //locate in jenkins EC2 serevr
     }
    
     stages {
         stage('Create Namespace on EKS') {
             steps {
-                withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
-                    sh "kubectl create namespace ${KUBE_NAMESPACE} || echo 'Namespace already exists'"
+                script {
+                    withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
+                        sh "kubectl create namespace ${KUBE_NAMESPACE} || echo 'Namespace already exists'"
+                    }
                 }
             }
         }
@@ -29,8 +32,10 @@ pipeline {
         
         stage('Deploy to EKS') {
             steps {
-                withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
-                    sh "kubectl apply -f ${env.WORKSPACE}/eks-deploy/manifest/ --namespace=${KUBE_NAMESPACE}"
+                script {
+                    withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
+                        sh "kubectl apply -f ${env.WORKSPACE}/eks-deploy/manifest/ --namespace=${KUBE_NAMESPACE}"
+                    }
                 }
             }
         }
