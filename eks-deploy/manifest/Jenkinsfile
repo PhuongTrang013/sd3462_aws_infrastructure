@@ -19,6 +19,9 @@ pipeline {
 
                         withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
                             sh "kubectl create namespace ${KUBE_NAMESPACE} || echo 'Namespace already exists'"
+
+                            // Change default working namespace to that one
+                            sh "kubectl config set-context --current --namespace ${KUBE_NAMESPACE}"
                         }
                     }
                 }
